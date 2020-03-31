@@ -18,7 +18,7 @@ module Sygna
     end
 
     def self.crypt
-      ECIES::Crypt.new(cipher: "AES-256-CBC", digest: "SHA512", mac_digest: "SHA1")
+      Crypt.new(cipher: "AES-256-CBC", digest: "SHA512", mac_digest: "SHA1")
     end
 
     private_class_method :crypt
