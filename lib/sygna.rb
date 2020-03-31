@@ -1,9 +1,10 @@
+require "ecies"
 require "sygna/version"
 require "sygna/config"
+require "sygna/private_info"
 
 module Sygna
   class Error < StandardError; end
-
 
   class << self
     def configure
