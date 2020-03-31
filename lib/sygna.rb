@@ -2,6 +2,7 @@ require "json"
 require "openssl"
 require "ecies"
 require "secp256k1"
+
 require "sygna/version"
 require "sygna/config"
 require "sygna/private_info"
