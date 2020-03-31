@@ -6,4 +6,3 @@ gemspec
 
 gem "secp256k1-ruby"
 gem "ecies", github: 'niclin/ecies', branch: "master"
-gem "bip44-ruby"
