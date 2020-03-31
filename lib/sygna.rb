@@ -1,3 +1,4 @@
+require "json"
 require "ecies"
 require "sygna/version"
 require "sygna/config"
