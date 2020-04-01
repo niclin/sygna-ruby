@@ -1,18 +1,14 @@
-GIT
-  remote: https://github.com/niclin/ecies
-  revision: 8b1c1af0c5444fc715a0f110ea3fcba535789fcd
-  branch: master
-  specs:
-    ecies (0.3.0)
-
 PATH
   remote: .
   specs:
-    sygna (0.1.0)
+    sygna (0.1.1)
+      bitcoin-secp256k1
 
 GEM
   remote: https://rubygems.org/
   specs:
+    bitcoin-secp256k1 (0.5.2)
+      ffi (>= 1.9.25)
     diff-lcs (1.3)
     ffi (1.12.2)
     rake (12.3.3)
@@ -29,18 +25,15 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.2)
-    secp256k1-ruby (0.4.1)
-      ffi (>= 1.9.10)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  bitcoin-secp256k1
   bundler (~> 1.17)
-  ecies!
   rake (~> 12)
   rspec (~> 3.7)
-  secp256k1-ruby
   sygna!
 
 BUNDLED WITH

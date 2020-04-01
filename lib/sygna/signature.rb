@@ -1,29 +1,31 @@
 module Sygna
-  class Signature
-    def initialize(obj)
-      @obj = obj
+  module Signature
+    EMPTY_SIGNATURE = { signature: "" }.freeze
+
+    def self.sign(object)
+      object_string = object.merge(EMPTY_SIGNATURE).to_json
+
+      Secp256k1::Utils.encode_hex(ecdsa_private_key.ecdsa_serialize_compact(ecdsa_private_key.ecdsa_sign(object_string)))
     end
 
-    def sign
-      object_string = @obj.merge(empty_signature).to_json
+    def self.verify(object, signature)
+      object_string = object.merge(EMPTY_SIGNATURE).to_json
 
-      privkey = Secp256k1::PrivateKey.new(privkey: private_key_binary)
+      raw_signature = Secp256k1::Utils.decode_hex(signature)
 
-      Secp256k1::Utils.encode_hex(privkey.ecdsa_serialize_compact(privkey.ecdsa_sign(object_string)))
+      signature = ecdsa_private_key.pubkey.ecdsa_deserialize_compact(raw_signature)
+
+      ecdsa_private_key.pubkey.ecdsa_verify(object_string, signature)
     end
 
-    private
-
-    def private_key_binary
+    def self.ecdsa_private_key
       config = Sygna::Config.instance
 
-      OpenSSL::PKey::EC.new(config.private_key).private_key.to_s(2)
+      private_key_binary = OpenSSL::PKey::EC.new(config.private_key).private_key.to_s(2)
+
+      Secp256k1::PrivateKey.new(privkey: private_key_binary)
     end
 
-    def empty_signature
-      {
-        signature: ""
-      }
-    end
+    private_class_method :ecdsa_private_key
   end
 end

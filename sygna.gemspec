@@ -38,5 +38,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 12"
   spec.add_development_dependency "rspec", "~> 3.7"
 
-  spec.add_runtime_dependency "secp256k1-ruby"
+  spec.add_runtime_dependency "bitcoin-secp256k1"
 end
