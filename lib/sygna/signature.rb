@@ -13,6 +13,8 @@ module Sygna
 
       raw_signature = Secp256k1::Utils.decode_hex(signature)
 
+      public_key_binary = [public_key].pack("H*")
+
       ecdsa_public_key = Secp256k1::PublicKey.new(pubkey: public_key)
 
       signature = ecdsa_public_key.ecdsa_deserialize_compact(raw_signature)
