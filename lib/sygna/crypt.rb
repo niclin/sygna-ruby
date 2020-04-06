@@ -63,7 +63,6 @@ module Sygna
       @cipher.reset
 
       group_copy = OpenSSL::PKey::EC::Group.new(key.group)
-      group_copy.point_conversion_form = :compressed
       ephemeral_key = OpenSSL::PKey::EC.new(group_copy).generate_key
       ephemeral_public_key_octet = ephemeral_key.public_key.to_bn.to_s(2)
 
