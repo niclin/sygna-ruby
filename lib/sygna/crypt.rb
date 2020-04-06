@@ -83,7 +83,7 @@ module Sygna
       # let iv = Buffer.allocUnsafe(16);
       # iv.fill(0);
       cipher_key = hashed_secret.slice(0, 32)
-      hmac_key = hashed_secret.slice(32, hashed_secret.length)
+      hmac_key = hashed_secret.slice(32, hashed_secret.length - 32)
 
       # const ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
       @cipher.encrypt
@@ -113,25 +113,27 @@ module Sygna
       @cipher.reset
 
       group_copy = OpenSSL::PKey::EC::Group.new(key.group)
-      group_copy.point_conversion_form = :compressed
 
-      ephemeral_public_key_length = group_copy.generator.to_bn.to_s(2).bytesize
-      ciphertext_length = encrypted_message.bytesize - ephemeral_public_key_length - @mac_length
-      ciphertext_length > 0 or raise OpenSSL::PKey::ECError, "Encrypted message too short"
+      ephemeral_public_key_octet = encrypted_message.slice(0, 65)
 
-      ephemeral_public_key_octet = encrypted_message.byteslice(0, ephemeral_public_key_length)
-      ciphertext = encrypted_message.byteslice(ephemeral_public_key_length, ciphertext_length)
-      mac = encrypted_message.byteslice(-@mac_length, @mac_length)
+      mac = encrypted_message.slice(65, 20)
+
+      ciphertext = encrypted_message.slice(85, encrypted_message.size)
 
       ephemeral_public_key = OpenSSL::PKey::EC::Point.new(group_copy, OpenSSL::BN.new(ephemeral_public_key_octet, 2))
 
       shared_secret = key.dh_compute_key(ephemeral_public_key)
 
-      key_pair = kdf(shared_secret, @cipher.key_len + @mac_length, ephemeral_public_key_octet)
-      cipher_key = key_pair.byteslice(0, @cipher.key_len)
-      hmac_key = key_pair.byteslice(-@mac_length, @mac_length)
+      # const hashedSecret = sha512(sharedSecret, 'hex');
+      hashed_secret = Digest::SHA512.digest(shared_secret)
 
-      computed_mac = OpenSSL::HMAC.digest(@mac_digest, hmac_key, ciphertext + @mac_shared_info).byteslice(0, @mac_length)
+      cipher_key = hashed_secret.slice(0, 32)
+      hmac_key = hashed_secret.slice(32, hashed_secret.length)
+
+      # const dataToMac = Buffer.concat([iv, ephemeral.getPublicKey(), ciphertext]);
+      data_to_mac = IV + ephemeral_public_key_octet + ciphertext
+
+      computed_mac = OpenSSL::HMAC.digest("SHA1", hmac_key, data_to_mac)
       computed_mac == mac or raise OpenSSL::PKey::ECError, "Invalid Message Authenticaton Code"
 
       @cipher.decrypt
