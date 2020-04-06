@@ -58,28 +58,49 @@ module Sygna
     # @param key [OpenSSL::EC:PKey] The public key.
     # @param message [String] The plain-text message.
     # @return [String] The octet string of the encrypted message.
+
+
+    # Crypt.new(cipher: "AES-256-CBC", digest: "SHA512", mac_digest: "SHA1")
     def encrypt(key, message)
       key.public_key? or raise "Must have public key to encrypt"
       @cipher.reset
 
+      # const ephemeral = crypto.createECDH('secp256k1');
       group_copy = OpenSSL::PKey::EC::Group.new(key.group)
+
+      # ephemeral.generateKeys();
       ephemeral_key = OpenSSL::PKey::EC.new(group_copy).generate_key
       ephemeral_public_key_octet = ephemeral_key.public_key.to_bn.to_s(2)
 
+      # const sharedSecret = ephemeral.computeSecret(publicKey, null);
       shared_secret = ephemeral_key.dh_compute_key(key.public_key)
 
-      key_pair = kdf(shared_secret, @cipher.key_len + @mac_length, ephemeral_public_key_octet)
-      cipher_key = key_pair.byteslice(0, @cipher.key_len)
-      hmac_key = key_pair.byteslice(-@mac_length, @mac_length)
+      # const hashedSecret = sha512(sharedSecret, 'hex');
+      hashed_secret = Digest::SHA512.digest(shared_secret)
 
+      # const encryptionKey = hashedSecret.slice(0, 32);
+      # const macKey = hashedSecret.slice(32);
+      # let iv = Buffer.allocUnsafe(16);
+      # iv.fill(0);
+      cipher_key = hashed_secret.slice(0, 32)
+      hmac_key = hashed_secret.slice(32, hashed_secret.length)
+
+      # const ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
       @cipher.encrypt
       @cipher.iv = IV
       @cipher.key = cipher_key
       ciphertext = @cipher.update(message) + @cipher.final
 
-      mac = OpenSSL::HMAC.digest(@mac_digest, hmac_key, ciphertext + @mac_shared_info).byteslice(0, @mac_length)
+      # const dataToMac = Buffer.concat([iv, ephemeral.getPublicKey(), ciphertext]);
+      data_to_mac = IV + ephemeral_public_key_octet + ciphertext
 
-      ephemeral_public_key_octet + ciphertext + mac
+      # const mac = hmacSha1(macKey, dataToMac);
+      mac = OpenSSL::HMAC.digest("SHA1", hmac_key, data_to_mac)
+
+      # const encData = Buffer.concat([ephemeral.getPublicKey(), mac, ciphertext]);
+
+      # 65 + 20 + 16
+      ephemeral_public_key_octet + mac + ciphertext
     end
 
     # Decrypts a message with a private key using ECIES.
