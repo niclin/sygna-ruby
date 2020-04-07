@@ -58,46 +58,30 @@ module Sygna
     # @param key [OpenSSL::EC:PKey] The public key.
     # @param message [String] The plain-text message.
     # @return [String] The octet string of the encrypted message.
-
-
-    # Crypt.new(cipher: "AES-256-CBC", digest: "SHA512", mac_digest: "SHA1")
     def encrypt(key, message)
       key.public_key? or raise "Must have public key to encrypt"
       @cipher.reset
 
-      # const ephemeral = crypto.createECDH('secp256k1');
       group_copy = OpenSSL::PKey::EC::Group.new(key.group)
 
-      # ephemeral.generateKeys();
       ephemeral_key = OpenSSL::PKey::EC.new(group_copy).generate_key
       ephemeral_public_key_octet = ephemeral_key.public_key.to_bn.to_s(2)
 
-      # const sharedSecret = ephemeral.computeSecret(publicKey, null);
       shared_secret = ephemeral_key.dh_compute_key(key.public_key)
 
-      # const hashedSecret = sha512(sharedSecret, 'hex');
       hashed_secret = Digest::SHA512.digest(shared_secret)
 
-      # const encryptionKey = hashedSecret.slice(0, 32);
-      # const macKey = hashedSecret.slice(32);
-      # let iv = Buffer.allocUnsafe(16);
-      # iv.fill(0);
       cipher_key = hashed_secret.slice(0, 32)
       hmac_key = hashed_secret.slice(32, hashed_secret.length - 32)
 
-      # const ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
       @cipher.encrypt
       @cipher.iv = IV
       @cipher.key = cipher_key
       ciphertext = @cipher.update(message) + @cipher.final
 
-      # const dataToMac = Buffer.concat([iv, ephemeral.getPublicKey(), ciphertext]);
       data_to_mac = IV + ephemeral_public_key_octet + ciphertext
 
-      # const mac = hmacSha1(macKey, dataToMac);
-      mac = OpenSSL::HMAC.digest("SHA1", hmac_key, data_to_mac)
-
-      # const encData = Buffer.concat([ephemeral.getPublicKey(), mac, ciphertext]);
+      mac = OpenSSL::HMAC.digest(@mac_digest, hmac_key, data_to_mac)
 
       # 65 + 20 + 16
       ephemeral_public_key_octet + mac + ciphertext
@@ -124,13 +108,11 @@ module Sygna
 
       shared_secret = key.dh_compute_key(ephemeral_public_key)
 
-      # const hashedSecret = sha512(sharedSecret, 'hex');
       hashed_secret = Digest::SHA512.digest(shared_secret)
 
       cipher_key = hashed_secret.slice(0, 32)
       hmac_key = hashed_secret.slice(32, hashed_secret.length)
 
-      # const dataToMac = Buffer.concat([iv, ephemeral.getPublicKey(), ciphertext]);
       data_to_mac = IV + ephemeral_public_key_octet + ciphertext
 
       computed_mac = OpenSSL::HMAC.digest("SHA1", hmac_key, data_to_mac)
@@ -141,43 +123,6 @@ module Sygna
       @cipher.key = cipher_key
 
       @cipher.update(ciphertext) + @cipher.final
-    end
-
-    # Key-derivation function, compatible with ANSI-X9.63-KDF
-    #
-    # @param shared_secret [String] The shared secret from which the key will
-    #     be derived.
-    # @param length [Integer] The length of the key to generate.
-    # @param shared_info_suffix [String] The suffix to append to the
-    #     shared_info.
-    # @return [String] Octet string of the derived key.
-    def kdf(shared_secret, length, shared_info_suffix)
-      length >=0 or raise "length cannot be negative"
-      return "" if length == 0
-
-      if length / @kdf_digest.digest_length >= 0xFF_FF_FF_FF
-        raise "length too large"
-      end
-
-      io = StringIO.new(String.new)
-      counter = 0
-
-      loop do
-        counter += 1
-        counter_bytes = [counter].pack('N')
-
-        io << @kdf_digest.digest(shared_secret + counter_bytes + @kdf_shared_info + shared_info_suffix)
-        if io.pos >= length
-          return io.string.byteslice(0, length)
-        end
-      end
-    end
-
-    # @return [String] A string representing this Crypt's parameters.
-    def to_s
-      "KDF-#{@kdf_digest.name}_" +
-      "HMAC-SHA-#{@mac_digest.digest_length * 8}-#{@mac_length * 8}_" +
-      @cipher.name
     end
 
     # Converts a hex-encoded public key to an `OpenSSL::PKey::EC`.
