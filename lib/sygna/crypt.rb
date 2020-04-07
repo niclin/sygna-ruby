@@ -25,32 +25,14 @@ module Sygna
     #     {CIPHERS}.
     # @param digest [String,OpenSSL::Digest] The digest algorithm to use for
     #     HMAC and KDF. Must be one of {DIGESTS}.
-    # @param mac_length [:half,:full] The length of the mac. If :half, the mac
-    #     length will be equal to half the mac_digest's digest_legnth. If
-    #     :full, the mac length will be equal to the mac_digest's
-    #     digest_length.
-    # @param kdf_digest [String,OpenSSL::Digest,nil] The digest algorithm to
-    #     use for KDF. If not specified, the `digest` argument will be used.
     # @param mac_digest [String,OpenSSL::Digest,nil] The digest algorithm to
     #     use for HMAC. If not specified, the `digest` argument will be used.
-    # @param kdf_shared_info [String] Optional. A string containing the shared
-    #     info used for KDF, also known as SharedInfo1.
-    # @param mac_shared_info [String] Optional. A string containing the shared
-    #     info used for MAC, also known as SharedInfo2.
-    def initialize(cipher: 'AES-256-CTR', digest: 'SHA256', mac_length: :half, kdf_digest: nil, mac_digest: nil, kdf_shared_info: '', mac_shared_info: '')
+    def initialize(cipher: 'AES-256-CTR', digest: 'SHA256', mac_digest: nil)
       @cipher = OpenSSL::Cipher.new(cipher)
       @mac_digest = OpenSSL::Digest.new(mac_digest || digest)
-      @kdf_digest = OpenSSL::Digest.new(kdf_digest || digest)
-      @kdf_shared_info = kdf_shared_info
-      @mac_shared_info = mac_shared_info
 
       CIPHERS.include?(@cipher.name) or raise "Cipher must be one of #{CIPHERS}"
       DIGESTS.include?(@mac_digest.name) or raise "Digest must be one of #{DIGESTS}"
-      DIGESTS.include?(@kdf_digest.name) or raise "Digest must be one of #{DIGESTS}"
-      [:half, :full].include?(mac_length) or raise "mac_length must be :half or :full"
-
-      @mac_length = @mac_digest.digest_length
-      @mac_length /= 2 if mac_length == :half
     end
 
     # Encrypts a message to a public key using ECIES.
