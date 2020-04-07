@@ -1,8 +1,7 @@
 # Sygna
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sygna`. To experiment with that code, run `bin/console` for an interactive prompt.
+This is a Ruby library to help you build servers/servies within Sygna Bridge Ecosystem. For more detail information, please see [Sygna Bridge](https://www.sygna.io/).
 
-TODO: Delete this and the text above, and describe your gem
 
 ## Installation
 
@@ -22,7 +21,71 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+You need prepare private key first, like this
+
+```
+# The private key example:
+# -----BEGIN EC PRIVATE KEY-----
+# ...
+# ...
+# ...
+# -----END EC PRIVATE KEY-----
+```
+
+initialize configure
+
+```ruby
+Sygna.configure do |config|
+  config.api_key = "abcde12345"
+  config.private_key = "Your private key"
+end
+```
+
+### Private Info
+
+
+#### Encode
+
+```ruby
+data = { name: "Nic" }
+public_key_hex = "abcde12345"
+
+Sygna::PrivateInfo.encode(data, public_key_hex)
+# => encrypted string
+```
+
+#### Decode
+
+```ruby
+data = "qazwsxedc1234567890"
+
+Sygna::PrivateInfo.decode(data)
+# => decrypted string
+```
+
+### Signature
+
+#### Sign
+
+```ruby
+object = { name: "Nic" }
+
+Sygna::Signature.sign(object)
+
+# => signatured string
+```
+
+#### Verify
+
+```ruby
+object = { name: "Nic" }
+signature = "abcde12345"
+public_key_hex = "originator public key"
+
+Sygna::Signature.verify(object, signature, public_key_hex)
+
+# => true or false
+```
 
 ## Development
 
@@ -32,7 +95,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/sygna.
+Bug reports and pull requests are welcome on GitHub at https://github.com/niclin/sygna.
 
 ## License
 
