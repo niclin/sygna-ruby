@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "sygna"
+require "yaml"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

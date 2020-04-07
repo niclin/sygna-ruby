@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sygna (0.1.1)
+    sygna (0.1.8)
       bitcoin-secp256k1
 
 GEM

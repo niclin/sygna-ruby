@@ -1,0 +1,6 @@
+private_key: |-
+  -----BEGIN EC PRIVATE KEY-----
+  MHcCAQEEIEy6xbfhcn1bLWhlP+Q1JMPe/Px/1u5rrd56N44ZXcdEoAoGCCqGSM49
+  AwEHoUQDQgAEC0Eu+iAomwc/V02MJLvNFeK4Ccf9O2emmCa6145M3mYBPd/ap9XM
+  V5KSTHpCsQfq4BkaIOLfJvRx2FTzcrnFyw==
+  -----END EC PRIVATE KEY-----
