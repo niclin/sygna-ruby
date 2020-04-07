@@ -8,18 +8,16 @@ module Sygna
       Secp256k1::Utils.encode_hex(ecdsa_private_key.ecdsa_serialize_compact(ecdsa_private_key.ecdsa_sign(object_string)))
     end
 
-    def self.verify(object, signature, public_key)
+    def self.verify(object, signature, public_key_hex)
       object_string = object.merge(EMPTY_SIGNATURE).to_json
 
-      raw_signature = Secp256k1::Utils.decode_hex(signature)
+      public_key_binary = Secp256k1::Utils.decode_hex(public_key_hex)
+      ecdsa_public_key = Secp256k1::PublicKey.new(pubkey: public_key_binary, raw: true)
 
-      public_key_binary = [public_key].pack("H*")
+      binary_signature = Secp256k1::Utils.decode_hex(signature)
+      raw_signature = ecdsa_public_key.ecdsa_deserialize_compact(binary_signature)
 
-      ecdsa_public_key = Secp256k1::PublicKey.new(pubkey: public_key)
-
-      signature = ecdsa_public_key.ecdsa_deserialize_compact(raw_signature)
-
-      ecdsa_public_key.ecdsa_verify(object_string, signature)
+      ecdsa_public_key.ecdsa_verify(object_string, raw_signature)
     end
 
     def self.ecdsa_private_key
