@@ -1,5 +1,6 @@
 # Sygna
 
+[![Gem Version](https://badge.fury.io/rb/sygna.svg)](https://badge.fury.io/rb/sygna)
 [![Build Status](https://travis-ci.org/niclin/sygna-ruby.svg?branch=master)](https://travis-ci.org/niclin/sygna-ruby)
 
 This is a Ruby library to help you build servers/servies within Sygna Bridge Ecosystem. For more detail information, please see [Sygna Bridge](https://www.sygna.io/).
