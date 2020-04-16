@@ -1,7 +1,17 @@
 ---
-sudo: false
+sudo: true
 language: ruby
 cache: bundler
 rvm:
   - 2.5.3
-before_install: gem install bundler -v 1.17.3
+before_install:
+  - git clone https://github.com/bitcoin-core/secp256k1.git
+  - cd secp256k1
+  - ./autogen.sh
+  - ./configure
+  - make
+  - sudo make install
+  - cd ..
+  - gem install bundler -v 1.17.3
+script:
+  - bundle exec rake

@@ -1,9 +1,28 @@
 # Sygna
 
+[![Build Status](https://travis-ci.org/niclin/sygna-ruby.svg?branch=master)](https://travis-ci.org/niclin/sygna-ruby)
+
 This is a Ruby library to help you build servers/servies within Sygna Bridge Ecosystem. For more detail information, please see [Sygna Bridge](https://www.sygna.io/).
 
 
-## Installation
+## Installation instructions
+
+If you are using Mac OS X and Homebrew, run these commands to install required development tools:
+
+```
+$ brew install autoconf automake libtool
+```
+
+Then download and install the library:
+
+```
+$ git clone https://github.com/bitcoin-core/secp256k1.git
+$ cd secp256k1
+$ ./autogen.sh
+$ ./configure
+$ make
+$ sudo make install
+```
 
 Add this line to your application's Gemfile:
 
