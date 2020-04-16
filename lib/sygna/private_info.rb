@@ -1,11 +1,7 @@
 module Sygna
   module PrivateInfo
     def self.encode(data, public_key_hex)
-      group = OpenSSL::PKey::EC::Group.new('secp256k1')
-      key = OpenSSL::PKey::EC.new(group)
-      public_key_bn = OpenSSL::BN.new(public_key_hex, 16)
-      public_key = OpenSSL::PKey::EC::Point.new(group, public_key_bn)
-      key.public_key = public_key
+      key = Crypt.public_key_from_hex(public_key_hex)
 
       crypt.encrypt(key, data.to_json).unpack('H*').first
     end
