@@ -56,7 +56,6 @@ initialize configure
 
 ```ruby
 Sygna.configure do |config|
-  config.api_key = "abcde12345"
   config.private_key = "Your private key"
 end
 ```
